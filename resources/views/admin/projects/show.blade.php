@@ -15,6 +15,11 @@
                         <h5 class="card-title">{{ $project->title }}</h5>
                         <p class="card-text">{{ $project->description }}</p>
                         <p class="card-text">Type: {{ $project->type->name }}</p>
+                        <div class="technologies-wrapper">
+                            @foreach ($project->technologies as $technology)
+                            <span class="badge rounded-pill" style="background-color: {{ $technology->color }}">{{ $technology->name }}</span>
+                            @endforeach
+                        </div>
                         <p class="card-text align-self-end"><small class="text-muted">{{ $project->creation_date }}</small></p>
                     </div>
 

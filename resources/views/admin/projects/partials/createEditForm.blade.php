@@ -14,6 +14,20 @@
     </div>
 
     <div class="mb-3">
+        <p class="m-0">Technologies</p>
+        @foreach ($technologies as $technology)
+            <input class="form-check-input" type="checkbox" name="technologies[]" id="input-technologies" value="{{ $technology->id }}"
+                @if ($errors->any())
+                    @checked(in_array($technology->id, old('technologies', [])))
+                @else
+                    @checked($project->technologies->contains($technology->id))
+                @endif
+            >
+            <label for="input-technologies" class="form-check-label me-3">{{ $technology->name }}</label>
+        @endforeach
+    </div>
+
+    <div class="mb-3">
         <label for="input-title" class="form-label">Title</label>
         <input type="text" class="form-control @error('title') is-invalid @enderror" name="title" value="{{ old('title', $project->title) }}" id="input-title">
         @error('title')

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Project;
+use App\Models\Technology;
 use App\Models\Type;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -33,8 +34,9 @@ class ProjectController extends Controller
     {
         $project = new Project();
         $types = Type::all();
+        $technologies = Technology::all();
 
-        return view('admin.projects.create', compact('project', 'types'));
+        return view('admin.projects.create', compact('project', 'types', 'technologies'));
     }
 
     /**
@@ -50,13 +52,15 @@ class ProjectController extends Controller
             'thumbnail' => 'required|image',
             'description' => 'required|string|min:50|max:300',
             'creation_date' => 'required|date',
-            'type_id' => 'required|exists:types,id'
+            'type_id' => 'required|exists:types,id',
+            'technologies' => 'array|exists:technologies,id'
         ]);
         $data['slug'] = Str::slug($data['title']);
         $data['thumbnail'] = Storage::put('imgs/', $data['thumbnail']);
         $newProject = new Project();
         $newProject->fill($data);
         $newProject->save();
+        $newProject->technologies()->sync($data['technologies']);
 
         return redirect()->route('admin.projects.show', $newProject->slug);
     }
@@ -84,7 +88,9 @@ class ProjectController extends Controller
     public function edit(Project $project)
     {
         $types = Type::all();
-        return view('admin.projects.edit', compact('project', 'types'));
+        $technologies = Technology::all();
+
+        return view('admin.projects.edit', compact('project', 'types', 'technologies'));
     }
 
     /**
@@ -101,7 +107,8 @@ class ProjectController extends Controller
             'thumbnail' => 'required|image',
             'description' => 'required|string|min:50|max:300',
             'creation_date' => 'required|date|before_or_equal:today',
-            'type_id' => 'required|exists:types,id'
+            'type_id' => 'required|exists:types,id',
+            'technologies' => 'array|exists:technologies,id'
         ]);
         $data['slug'] = Str::slug($data['title']);
         if ($request->hasFile('thumbnail')) {
@@ -111,6 +118,7 @@ class ProjectController extends Controller
             $data['thumbnail'] = Storage::put('imgs/', $data['thumbnail']);
         }
         $project->update($data);
+        $project->technologies()->sync($data['technologies']);
 
         return redirect()->route('admin.projects.show', compact('project'));
     }
@@ -126,6 +134,7 @@ class ProjectController extends Controller
         if (!$project->isThumbnailAUrl()) {
             Storage::delete($project->thumbnail);
         }
+        $project->technologies()->sync([]);
         $project->delete();
 
         return redirect()->route('admin.projects.index');
